@@ -129,6 +129,8 @@ open http://127.0.0.1:8080
 
 ### CI/CD Pipeline
 
+Deploying to a local cluster via GitHub Actions uses a self-hosted runner on your machine. Make sure the runner has Docker, kubectl, and access to your cluster. The workflow consumes `KUBE_CONFIG` if provided; otherwise it expects `$HOME/.kube/config` to exist on the runner.
+
 #### GitHub Actions Workflow
 The workflow in `.github/workflows/build-deploy.yml` automatically:
 
