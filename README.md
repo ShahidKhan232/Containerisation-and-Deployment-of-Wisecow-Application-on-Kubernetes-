@@ -14,6 +14,17 @@ sudo apt install fortune-mod cowsay -y
 ## What to expect?
 ![wisecow](https://github.com/nyrahul/wisecow/assets/9133227/8d6bfde3-4a5a-480e-8d55-3fef60300d98)
 
+## Deployment Screenshots
+
+**Kubernetes Output:**
+![k8 output](screenshots/k8%20output.png)
+
+**App Output:**
+![output](screenshots/output.png)
+
+**Port Forwarding Access:**
+![port forwarding](screenshots/port%20forwarding.png)
+
 # Problem Statement
 Deploy the wisecow application as a k8s app
 
