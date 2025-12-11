@@ -127,7 +127,6 @@ cd Containerisation-and-Deployment-of-Wisecow-Application-on-Kubenetes
 export AWS_DEFAULT_REGION=us-east-1
 
 # 2. Update configuration files
-# - k8s/ingress.yaml (your domain name)
 # - k8s/cluster-issuer.yaml (your email address)
 # - .github/workflows/ci-cd.yaml (registry details)
 
@@ -350,151 +349,6 @@ kubectl get svc --all-namespaces -o wide | grep LoadBalancer
 kubectl get svc,ingress --all-namespaces
 
 ```
-#### 1. 🔴 Container Not Starting
-
-**Symptoms**: Pods in `CrashLoopBackOff` or `ImagePullBackOff`
-
-**Debug Steps**:
-```bash
-# Check pod events
-kubectl describe pod <pod-name> -n wisecow
-
-# Check image accessibility
-kubectl get pods -n wisecow -o wide
-
-# Test container locally
-docker run -it --rm --entrypoint /bin/sh ghcr.io/your-username/wisecow:latest
-```
-
-#### 2. 🔴 Application Not Responding
-
-**Symptoms**: Readiness/liveness probe failures
-
-**Debug Steps**:
-```bash
-# Check if app is listening on port
-kubectl exec -it <pod-name> -n wisecow -- netstat -tuln
-
-# Test application manually
-kubectl exec -it <pod-name> -n wisecow -- /bin/bash
-cd /app && ./wisecow.sh
-
-# Check resource limits
-kubectl top pods -n wisecow
-```
-
-#### 3. 🔴 Certificate Issues
-
-**Symptoms**: TLS certificate not issuing or expired
-
-**Debug Steps**:
-```bash
-# Check certificate status
-kubectl get certificates -n wisecow
-kubectl describe certificate -n wisecow
-
-# Check cert-manager logs
-kubectl logs -f deployment/cert-manager -n cert-manager
-
-# Verify DNS propagation
-dig your-domain.com +short
-```
-
-#### 4. 🔴 LoadBalancer Not Accessible
-
-**Symptoms**: Cannot reach application via external URL
-
-**Debug Steps**:
-```bash
-# Check service and ingress
-kubectl get svc,ingress -n wisecow
-
-# Test internal connectivity
-kubectl port-forward svc/wisecow-service -n wisecow 4499:4499
-
-# Check DNS resolution
-nslookup your-domain.com
-```
-
-### Comprehensive Debugging Commands
-
-#### Application Logs
-```bash
-# Follow deployment logs
-kubectl logs -f deployment/wisecow-deployment -n wisecow
-
-# Get logs from all pods
-kubectl logs -l app=wisecow -n wisecow --all-containers=true
-
-# Check specific pod logs
-kubectl logs -f <pod-name> -n wisecow
-```
-
-#### Service and Network Debugging
-```bash
-# Check services
-kubectl get svc -n wisecow -o wide
-
-# Check endpoints
-kubectl get endpoints -n wisecow
-
-# Test network connectivity
-kubectl exec -it <pod-name> -n wisecow -- nc -zv <service-name> 4499
-```
-
-#### Event Monitoring
-```bash
-# Get recent events
-kubectl get events -n wisecow --sort-by=.metadata.creationTimestamp
-
-# Watch events in real-time
-kubectl get events -n wisecow --watch
-```
-
----
-
-## Security
-
-### Container Security
-
-#### Security Context
-```bash
-# Check container security context
-kubectl get pod <pod-name> -n wisecow -o jsonpath='{.spec.securityContext}'
-
-# Verify non-root user
-kubectl exec -it <pod-name> -n wisecow -- whoami
-```
-
-#### Image Security
-```bash
-# Scan image for vulnerabilities
-docker scan ghcr.io/your-username/wisecow:latest
-
-# Check image layers
-docker history ghcr.io/your-username/wisecow:latest
-```
-
-### Network Security
-
-#### Security Groups (AWS)
-```bash
-# List security groups
-aws ec2 describe-security-groups --group-ids <sg-id>
-
-# Check security group rules
-aws ec2 describe-security-groups --group-ids <sg-id> --query 'SecurityGroups[0].IpPermissions'
-```
-
-#### Network Policies
-```bash
-# Check network policies
-kubectl get networkpolicies -n wisecow
-
-# Test network connectivity
-kubectl exec -it <pod-name> -n wisecow -- nc -zv kubernetes.default.svc.cluster.local 443
-```
-
 ---
 
 ## Monitoring
@@ -523,22 +377,6 @@ kubectl get nodes
 kubectl get pods --all-namespaces | grep -E "(kube-system|ingress-nginx|cert-manager)"
 ```
 
-### Logging and Monitoring
-
-#### Centralized Logging
-```bash
-# Install logging stack (optional)
-helm repo add elastic https://helm.elastic.co
-helm install elasticsearch elastic/elasticsearch -n logging --create-namespace
-helm install kibana elastic/kibana -n logging
-```
-
-#### Metrics Collection
-```bash
-# Install Prometheus and Grafana
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm install prometheus prometheus-community/kube-prometheus-stack -n monitoring --create-namespace
-```
 
 ---
 
