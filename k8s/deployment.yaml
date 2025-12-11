@@ -7,6 +7,7 @@ metadata:
     app: wisecow
 spec:
   replicas: 3
+  progressDeadlineSeconds: 600
   strategy:
     type: RollingUpdate
     rollingUpdate:
@@ -27,7 +28,7 @@ spec:
         - name: ghcr-secret
       containers:
         - name: wisecow
-          image: ghcr.io/ShahidKhan232/wisecow:latest
+          image: ghcr.io/shahidkhan232/wisecow:latest
           imagePullPolicy: Always
           command: ["/bin/bash", "-c", "cd /app && exec ./wisecow.sh"]
           ports:
