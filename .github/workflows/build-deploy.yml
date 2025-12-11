@@ -64,6 +64,8 @@ jobs:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
+    env:
+      KUBE_CONFIG_B64: ${{ secrets.KUBE_CONFIG }}
     
     steps:
       - name: Checkout code
@@ -75,14 +77,14 @@ jobs:
           version: 'v1.28.0'
 
       - name: Set kubeconfig from secret
-        if: ${{ secrets.KUBE_CONFIG != '' }}
+        if: env.KUBE_CONFIG_B64 != ''
         run: |
           mkdir -p $HOME/.kube
-          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
+          echo "$KUBE_CONFIG_B64" | base64 -d > $HOME/.kube/config
           chmod 600 $HOME/.kube/config
 
       - name: Use existing kubeconfig on runner
-        if: ${{ secrets.KUBE_CONFIG == '' }}
+        if: env.KUBE_CONFIG_B64 == ''
         run: |
           mkdir -p $HOME/.kube
           if [ ! -f "$HOME/.kube/config" ]; then echo "No kubeconfig found and KUBE_CONFIG secret not set" && exit 1; fi
