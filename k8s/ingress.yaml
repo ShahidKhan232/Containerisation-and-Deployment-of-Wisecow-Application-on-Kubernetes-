@@ -11,10 +11,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - wisecow.anuragstark.in
+        - wisecow.shahidkhan.in
       secretName: wisecow-tls
   rules:
-    - host: wisecow.anuragstark.in
+    - host: wisecow.shahidkhan.in
       http:
         paths:
           - path: /
