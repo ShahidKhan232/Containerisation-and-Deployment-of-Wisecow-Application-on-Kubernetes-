@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Ensure /usr/games is in PATH (where cowsay is typically installed)
+export PATH=$PATH:/usr/games:/usr/local/sbin:/usr/sbin:/sbin
+
 SRVPORT=4499
 RSPFILE=response
 
@@ -25,12 +28,14 @@ EOF
 }
 
 prerequisites() {
-	command -v cowsay >/dev/null 2>&1 &&
-	command -v fortune >/dev/null 2>&1 || 
-		{ 
-			echo "Install prerequisites."
-			exit 1
-		}
+	if ! command -v cowsay >/dev/null 2>&1; then
+		echo "cowsay not found in PATH"
+		exit 1
+	fi
+	if ! command -v fortune >/dev/null 2>&1; then
+		echo "fortune not found in PATH"
+		exit 1
+	fi
 }
 
 main() {
