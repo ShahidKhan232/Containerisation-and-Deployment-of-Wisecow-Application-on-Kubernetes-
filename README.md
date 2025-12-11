@@ -35,14 +35,13 @@ Deploy the wisecow application as a k8s app
 - Docker
 - Kubernetes cluster (v1.24+)
 - kubectl configured to access your cluster
-- cert-manager installed in the cluster (for TLS)
 - NGINX Ingress Controller installed
+- cert-manager installed in the cluster (only if you want HTTPS/TLS)
 
 ### Local Development
 
 #### Build Docker Image
 ```bash
-cd wisecow
 docker build -t wisecow:latest .
 docker run -p 4499:4499 wisecow:latest
 ```
@@ -63,20 +62,11 @@ kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/cont
 
 #### 2. Configure and Deploy
 
-**Update domain in ingress.yaml:**
-Edit `k8s/ingress.yaml` and replace `wisecow.example.com` with your domain:
-```yaml
-spec:
-  tls:
-  - hosts:
-    - your-domain.com
-    secretName: wisecow-tls
-  rules:
-  - host: your-domain.com
-```
+**Update host in ingress.yaml:**
+For local use with magic DNS, `k8s/ingress.yaml` is pre-set to `wisecow.127.0.0.1.sslip.io` and TLS is disabled. If your ingress controller listens on a different IP, adjust the host to `wisecow.<your-ip>.sslip.io` (or `nip.io`). For a custom domain + HTTPS, re-enable the `tls:` block and cert-manager annotations and set your domain.
 
-**Configure TLS Certificate Issuer:**
-Edit `k8s/certificate-issuer.yaml` and update:
+**(Optional) Configure TLS Certificate Issuer:**
+Only needed if you enable HTTPS. Edit `k8s/certificate-issuer.yaml` and update:
 - `email`: Your email for Let's Encrypt
 - DNS provider credentials (for DNS01 challenge)
 
@@ -85,7 +75,8 @@ Edit `k8s/certificate-issuer.yaml` and update:
 # Create namespace and deploy resources
 kubectl apply -f k8s/namespace.yaml
 kubectl apply -f k8s/configmap.yaml
-kubectl apply -f k8s/certificate-issuer.yaml
+# If enabling TLS, also apply the issuer:
+# kubectl apply -f k8s/certificate-issuer.yaml
 kubectl apply -f k8s/deployment.yaml
 kubectl apply -f k8s/service.yaml
 kubectl apply -f k8s/ingress.yaml
@@ -103,23 +94,26 @@ kubectl get pods -n wisecow
 # Check service
 kubectl get svc -n wisecow
 
-# Check ingress and TLS status
+# Check ingress (and TLS if enabled)
 kubectl get ingress -n wisecow
 kubectl describe ingress wisecow -n wisecow
 
-# View certificate status
+# If TLS enabled, view certificate status
 kubectl get certificate -n wisecow
 kubectl describe certificate wisecow-tls -n wisecow
 ```
 
 #### 4. Access the Application
-Once the ingress and certificate are ready:
+For local magic DNS (no TLS):
 ```bash
-# Get the ingress external IP
+# Apply ingress then browse http://wisecow.127.0.0.1.sslip.io/
 kubectl get ingress wisecow -n wisecow
+```
 
-# Access via HTTPS
-curl https://your-domain.com
+Or port-forward without ingress:
+```bash
+kubectl port-forward -n wisecow svc/wisecow 8080:80
+open http://127.0.0.1:8080
 ```
 
 ### CI/CD Pipeline
@@ -180,7 +174,7 @@ openssl s_client -connect your-domain.com:443 -showcerts
 ### Components
 - **Deployment**: 3 replicas with rolling update strategy
 - **Service**: ClusterIP for internal networking
-- **Ingress**: HTTPS termination with TLS/SSL
+- **Ingress**: HTTP by default for local magic DNS; can enable TLS with cert-manager
 - **Pod Anti-Affinity**: Spreads pods across nodes for HA
 - **Health Checks**: Liveness and readiness probes for reliability
 - **Resource Management**: Memory and CPU limits/requests
@@ -250,24 +244,9 @@ wisecow/
     ├── configmap.yaml              # Application configuration
     ├── deployment.yaml             # Deployment specification
     ├── service.yaml                # Service definition
-    ├── ingress.yaml                # Ingress with TLS
-    └── certificate-issuer.yaml     # Let's Encrypt configuration
+  ├── ingress.yaml                # Ingress (HTTP for local; enable TLS as needed)
+  └── certificate-issuer.yaml     # Let's Encrypt configuration (optional)
 ```
 
-## Security Considerations
 
-- **Image Security**: Trivy scanning in CI/CD pipeline
-- **Network Security**: TLS encryption for all traffic
-- **RBAC**: Use proper RBAC policies (configure as needed)
-- **Pod Security**: Non-root containers, read-only filesystems when possible
-- **Secrets Management**: Use Kubernetes secrets for sensitive data
 
-## Access Control
-
-This is a private repository. Access granted to:
-- `nyrahul`
-
-To grant access to other users:
-1. Go to Settings → Collaborators and teams
-2. Add collaborator with appropriate permissions
-3. Ensure they have GitHub CLI or direct access credentials

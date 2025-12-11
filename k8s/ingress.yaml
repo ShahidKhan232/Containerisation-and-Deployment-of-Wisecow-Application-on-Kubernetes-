@@ -6,17 +6,11 @@ metadata:
   labels:
     app: wisecow
   annotations:
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
-  tls:
-  - hosts:
-    - wisecow.example.com
-    secretName: wisecow-tls
   rules:
-  - host: wisecow.example.com
+  - host: wisecow.127.0.0.1.sslip.io
     http:
       paths:
       - path: /
