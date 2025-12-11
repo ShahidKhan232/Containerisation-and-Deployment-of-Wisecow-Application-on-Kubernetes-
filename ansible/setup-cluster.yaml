@@ -8,6 +8,7 @@
   vars:
     cluster_name: "wisecow-cluster"
     aws_region: "us-east-1"
+    ingress_host: "a1c83c199b4c04d528a596f3d78f71f3-996071648.us-east-1.elb.amazonaws.com"
 
   tasks:
     - name: Install kubectl
@@ -98,4 +99,34 @@
         api_version: v1
         kind: Namespace
         state: present
+
+    - name: Ensure wisecow ingress is configured without custom DNS
+      kubernetes.core.k8s:
+        definition:
+          apiVersion: networking.k8s.io/v1
+          kind: Ingress
+          metadata:
+            name: wisecow-ingress
+            namespace: wisecow
+            annotations:
+              kubernetes.io/ingress.class: "nginx"
+              cert-manager.io/cluster-issuer: "letsencrypt-prod"
+              nginx.ingress.kubernetes.io/ssl-redirect: "true"
+              nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+          spec:
+            tls:
+              - hosts:
+                  - "{{ ingress_host }}"
+                secretName: wisecow-tls
+            rules:
+              - host: "{{ ingress_host }}"
+                http:
+                  paths:
+                    - path: "/"
+                      pathType: Prefix
+                      backend:
+                        service:
+                          name: wisecow-service
+                          port:
+                            number: 80
 

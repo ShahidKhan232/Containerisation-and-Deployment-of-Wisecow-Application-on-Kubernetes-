@@ -11,10 +11,10 @@ metadata:
 spec:
   tls:
     - hosts:
-        - wisecow.shahidkhan.in
+        - a1c83c199b4c04d528a596f3d78f71f3-996071648.us-east-1.elb.amazonaws.com
       secretName: wisecow-tls
   rules:
-    - host: wisecow.shahidkhan.in
+    - host: a1c83c199b4c04d528a596f3d78f71f3-996071648.us-east-1.elb.amazonaws.com
       http:
         paths:
           - path: /
