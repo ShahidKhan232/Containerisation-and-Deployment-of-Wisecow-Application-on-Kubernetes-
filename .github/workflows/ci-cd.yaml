@@ -6,7 +6,7 @@ on:
     branches: [ main ]
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  IMAGE_NAME: shahidkhan232/wisecow
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
