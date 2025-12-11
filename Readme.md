@@ -13,10 +13,7 @@ A comprehensive guide for containerizing and deploying the Wisecow application o
 - [TLS Configuration](#tls-configuration)
 - [Operations & Management](#operations--management)
 - [Debugging & Troubleshooting](#debugging--troubleshooting)
-- [Performance & Scaling](#performance--scaling)
-- [Security](#security)
-- [Monitoring](#monitoring)
-- [Cleanup](#cleanup)
+
 
 ---
 
@@ -48,7 +45,6 @@ A comprehensive guide for containerizing and deploying the Wisecow application o
 wisecow/
 ├── 📄 Dockerfile                    # Container definition
 ├── 📄 docker-compose.yml           # Local development
-├── 📄 Makefile                     # Automation commands
 ├── 📄 .gitignore                   # Git ignore rules
 ├── 📄 README.md                    # Documentation
 ├── 📄 Certificate.TLS.info         # TLS information
@@ -65,11 +61,6 @@ wisecow/
 │   └── outputs.tf
 ├── 📁 ansible/                     # Configuration management
 │   └── setup-cluster.yaml
-├── 📁 scripts/                     # Utility scripts
-│   ├── deploy.sh
-│   ├── cleanup.sh
-│   ├── monitor.sh
-│   └── health-check.sh
 └── 📁 .github/workflows/           # CI/CD pipeline
     └── ci-cd.yaml
 ```
@@ -120,27 +111,12 @@ ansible --version
 
 ```bash
 # Clone repository
-git clone https://github.com/anuragstark/wisecow.git
-cd wisecow
+git clone 
+cd Containerisation-and-Deployment-of-Wisecow-Application-on-Kubenetes
 
-# Deploy everything
-make deploy
+
 ```
 
-### 🔧 Essential Commands
-
-```bash
-# Health check
-make health-check
-
-# Monitor application
-make monitor
-
-# Clean up resources
-make clean
-```
-
----
 
 ## Deployment Methods
 
@@ -155,12 +131,6 @@ export AWS_DEFAULT_REGION=us-east-1
 # - k8s/cluster-issuer.yaml (your email address)
 # - .github/workflows/ci-cd.yaml (registry details)
 
-# 3. Run automated deployment
-chmod +x scripts/deploy.sh
-./scripts/deploy.sh
-
-# 4. Configure DNS
-# Point your domain to the LoadBalancer URL
 ```
 
 ### Method 2: Manual Step-by-Step Deployment
@@ -481,75 +451,6 @@ kubectl get events -n wisecow --sort-by=.metadata.creationTimestamp
 kubectl get events -n wisecow --watch
 ```
 
-### DNS and Domain Troubleshooting
-
-```bash
-# Test DNS resolution
-nslookup your-domain.com
-dig your-domain.com +short
-
-# Get LoadBalancer IP
-kubectl get ingress -n wisecow -o jsonpath='{.items[0].status.loadBalancer.ingress[0].hostname}'
-
-# Test with specific DNS server
-dig @8.8.8.8 your-domain.com +short
-
-# Clear DNS cache
-sudo systemctl restart systemd-resolved
-```
-
----
-
-## Performance & Scaling
-
-### Resource Optimization
-
-#### Monitor Resource Usage
-```bash
-# Check pod resource usage
-kubectl top pods -n wisecow
-
-# Check node resource usage
-kubectl top nodes
-
-# View resource requests/limits
-kubectl describe deployment wisecow-deployment -n wisecow | grep -A 5 "Requests\|Limits"
-```
-
-#### Horizontal Pod Autoscaling
-```bash
-# Create HPA
-kubectl autoscale deployment wisecow-deployment --cpu-percent=70 --min=3 --max=10 -n wisecow
-
-# Check HPA status
-kubectl get hpa -n wisecow
-
-# View HPA details
-kubectl describe hpa -n wisecow
-```
-
-#### Vertical Pod Autoscaling
-```bash
-# Install VPA (if not installed)
-kubectl apply -f https://github.com/kubernetes/autoscaler/releases/latest/download/vpa-release.yaml
-
-# Create VPA resource
-kubectl apply -f - <<EOF
-apiVersion: autoscaling.k8s.io/v1
-kind: VerticalPodAutoscaler
-metadata:
-  name: wisecow-vpa
-  namespace: wisecow
-spec:
-  targetRef:
-    apiVersion: apps/v1
-    kind: Deployment
-    name: wisecow-deployment
-  updatePolicy:
-    updateMode: "Auto"
-EOF
-```
-
 ---
 
 ## Security
@@ -608,9 +509,7 @@ kubectl get deployment wisecow-deployment -n wisecow
 # Check pod health
 kubectl get pods -n wisecow -o wide
 
-# Test health endpoint
-curl -k https://your-domain.com/health
-```
+
 
 #### Cluster Health
 ```bash
@@ -667,12 +566,7 @@ helm uninstall cert-manager -n cert-manager
 
 ### Complete Infrastructure Cleanup
 
-#### Automated Cleanup
-```bash
-# Run cleanup script
-chmod +x scripts/cleanup.sh
-./scripts/cleanup.sh
-```
+
 
 #### Manual Cleanup
 ```bash
@@ -718,84 +612,6 @@ git commit -m "Add new feature"
 git push origin feature/new-feature
 ```
 
-### Integration Testing
-
-#### Automated Tests
-```bash
-# Test health endpoint
-curl -k https://your-domain.com/health
-
-# Test main application
-curl -k https://your-domain.com
-
-# Load testing
-for i in {1..10}; do curl -k https://your-domain.com; done
-```
-
-#### Manual Testing
-```bash
-# Test certificate
-openssl s_client -connect your-domain.com:443 -servername your-domain.com
-
-# Test DNS resolution
-nslookup your-domain.com
-
-# Test from different locations
-curl -I https://your-domain.com
-```
-
----
-
-## Troubleshooting Checklist
-
-### Pre-Deployment Checklist
-- [ ] AWS credentials configured and tested
-- [ ] Kubernetes cluster accessible
-- [ ] Docker image built and pushed successfully
-- [ ] Domain DNS properly configured
-- [ ] SSL certificates configuration ready
-- [ ] All required secrets added to GitHub
-
-### During Deployment Checklist
-- [ ] Pods are running and ready
-- [ ] Services are accessible internally
-- [ ] Ingress controller is working
-- [ ] Certificates are issued successfully
-- [ ] LoadBalancer is accessible externally
-- [ ] DNS resolution is working
-
-### Post-Deployment Checklist
-- [ ] Application responds to health checks
-- [ ] TLS certificates are valid and auto-renewing
-- [ ] Monitoring and logging are functional
-- [ ] Scaling works as expected
-- [ ] Backup procedures are in place
-- [ ] Documentation is updated
-
----
-
-## Best Practices
-
-### Development
-- Use multi-stage Docker builds for smaller images
-- Implement proper health checks and readiness probes
-- Use non-root users in containers
-- Set appropriate resource limits and requests
-- Follow GitOps practices with version control
-
-### Operations
-- Implement proper monitoring and alerting
-- Use Infrastructure as Code for all resources
-- Regularly update and patch all components
-- Implement proper backup and disaster recovery
-- Use secrets management for sensitive data
-
-### Security
-- Regularly scan images for vulnerabilities
-- Use network policies to restrict traffic
-- Implement proper RBAC in Kubernetes
-- Use TLS for all communications
-- Follow principle of least privilege
 
 ---
 
@@ -821,8 +637,4 @@ curl -I https://your-domain.com
 - [Docker Best Practices](https://docs.docker.com/develop/dev-best-practices/)
 - [Terraform Documentation](https://www.terraform.io/docs/)
 
----
 
-**Last Updated**: July 2025  
-**Version**: 1.0  
-**Maintainer**: Anurag Chauhan (anuragchauhan536@gmail.com)
