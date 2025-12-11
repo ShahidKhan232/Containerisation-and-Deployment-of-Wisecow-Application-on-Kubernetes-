@@ -1,4 +1,4 @@
-# Wisecow Application - Kubernetes Deployment Guide
+# Containerisation and Deployment of Wisecow Application on Kubernetes
 
 A comprehensive guide for containerizing and deploying the Wisecow application on AWS EKS with automated CI/CD pipeline and TLS support.
 
