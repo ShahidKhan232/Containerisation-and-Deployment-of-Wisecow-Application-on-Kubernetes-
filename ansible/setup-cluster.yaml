@@ -84,7 +84,7 @@
           spec:
             acme:
               server: https://acme-v02.api.letsencrypt.org/directory
-              email: anuragchauhan536@gmail.com
+              email: shahidkhan.95173@gmail.com
               privateKeySecretRef:
                 name: letsencrypt-prod
               solvers:
