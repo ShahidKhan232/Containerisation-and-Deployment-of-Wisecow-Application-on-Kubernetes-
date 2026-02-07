@@ -18,7 +18,7 @@ A comprehensive guide for containerizing and deploying the Wisecow application o
 ---
 
 ## Architecture Overview
-
+![Project Architecture](Images/wisecow-deployment.png)
 ### Technology Stack
 - **Container Runtime**: Docker
 - **Orchestration**: Kubernetes (AWS EKS)
